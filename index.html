@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MaiMotTinhYeuMaiMotTinhYeu</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(#2c0f0f, #000);
+      font-family: 'Times New Roman', serif;
+      position: relative;
+    }
+
+    .text, .heart-falling {
+      position: absolute;
+      white-space: nowrap;
+      animation: fall linear infinite;
+      pointer-events: none;
+      text-shadow:
+        0 0 8px rgba(255, 150, 255, 0.4),
+        0 0 16px rgba(255, 180, 255, 0.3);
+      filter: blur(0.5px);
+    }
+
+    .text {
+      color: white;
+    }
+
+    .heart-falling {
+      color: pink;
+      font-size: 24px;
+      filter: blur(0.4px);
+      text-shadow:
+        0 0 6px rgba(255, 150, 200, 0.5),
+        0 0 14px rgba(255, 180, 220, 0.4);
+    }
+
+    .heart {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: pink;
+      transform: rotate(45deg);
+      animation: floatHeart linear infinite;
+      opacity: 0.6;
+    }
+
+    .heart::before,
+    .heart::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: pink;
+      border-radius: 50%;
+    }
+
+    .heart::before {
+      top: -6px;
+      left: 0;
+    }
+
+    .heart::after {
+      left: -6px;
+      top: 0;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-100px);
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(110vh);
+        opacity: 0;
+      }
+    }
+
+    @keyframes floatHeart {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 0.5;
+      }
+      50% {
+        transform: translateY(-100px) scale(1.2);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-200px) scale(1);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    const texts = [
+      "Trí và Ngân", "04/03/2004", "I love you", "Wish you all the best",
+      "Ngày mà thế giới chính là em ", "Love", "Forever", "14/07/2005","chúc em vì tất cả"
+    ];
+
+    const strokeColors = [
+      'rgba(255, 84, 174, 0.34)',  
+      'rgba(255, 0, 255, 0.03)'   
+    ];
+    let strokeIndex = 0;
+
+    function createText() {
+      const text = document.createElement("div");
+      text.classList.add("text");
+      text.textContent = texts[Math.floor(Math.random() * texts.length)];
+      const strokeColor = strokeColors[strokeIndex];
+      strokeIndex = (strokeIndex + 1) % strokeColors.length;
+      text.style.webkitTextStroke = `9px ${strokeColor}`;
+      text.style.left = `${Math.random() * window.innerWidth}px`;
+      text.style.fontSize = `${16 + Math.random() * 24}px`;
+      text.style.animationDuration = `${3 + Math.random() * 5}s`;
+      text.style.opacity = 0.4 + Math.random() * 0.6;
+      text.style.filter = `blur(${0.3 + Math.random()}px)`;
+      text.style.zIndex = Math.floor(Math.random() * 10);
+      document.body.appendChild(text);
+      setTimeout(() => text.remove(), 8000);
+    }
+
+    function createHeartFloating() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.style.left = `${Math.random() * window.innerWidth}px`;
+      heart.style.bottom = "0px";
+      heart.style.animationDuration = `${4 + Math.random() * 4}s`;
+      heart.style.opacity = 0.3 + Math.random() * 0.7;
+      heart.style.transform = `scale(${0.8 + Math.random() * 1.2}) rotate(45deg)`;
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 8000);
+    }
+
+    function createFallingHeartIcon() {
+      const heartIcon = document.createElement("div");
+      heartIcon.classList.add("heart-falling");
+      heartIcon.textContent = "❤️";
+      const left = Math.random() * window.innerWidth;
+      const duration = 3 + Math.random() * 5;
+      const size = 20 + Math.random() * 20;
+      const opacity = 0.5 + Math.random() * 0.5;
+      const blur = 0.2 + Math.random();
+      heartIcon.style.left = `${left}px`;
+      heartIcon.style.fontSize = `${size}px`;
+      heartIcon.style.animationDuration = `${duration}s`;
+      heartIcon.style.opacity = opacity;
+      heartIcon.style.filter = `blur(${blur}px)`;
+      document.body.appendChild(heartIcon);
+      setTimeout(() => heartIcon.remove(), 8000);
+    }
+
+    setInterval(() => {
+      for (let i = 0; i < 2; i++) createText();
+    }, 400);
+    setInterval(createHeartFloating, 500);
+    setInterval(createFallingHeartIcon, 350);
+
+    // ---- CÁC THAO TÁC CẢM ỨNG 3D ----
+    let startX = null, startY = null;
+    let startTime = 0;
+    let longPressTimeout = null;
+    let isLongPress = false;
+
+    let initialDistance = 0;
+    let initialAngle = 0;
+    let pinchZoom = false;
+    let rotateGesture = false;
+
+    function getDistance(touches) {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx*dx + dy*dy);
+    }
+
+    function getAngle(touches) {
+      const dx = touches[1].clientX - touches[0].clientX;
+      const dy = touches[1].clientY - touches[0].clientY;
+      return Math.atan2(dy, dx) * 180 / Math.PI;
+    }
+
+    document.addEventListener("touchstart", (e) => {
+      startTime = Date.now();
+      isLongPress = false;
+      if (e.touches.length === 1) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        longPressTimeout = setTimeout(() => {
+          isLongPress = true;
+          alert("Chạm giữ (long press)");
+        }, 600);
+      } else if (e.touches.length === 2) {
+        pinchZoom = true;
+        rotateGesture = true;
+        initialDistance = getDistance(e.touches);
+        initialAngle = getAngle(e.touches);
+      } else {
+        pinchZoom = false;
+        rotateGesture = false;
+      }
+    });
+
+    document.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 1) {
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
+          clearTimeout(longPressTimeout);
+        }
+      } else if (e.touches.length === 2 && pinchZoom && rotateGesture) {
+        const currentDistance = getDistance(e.touches);
+        const distanceDiff = currentDistance - initialDistance;
+        if (Math.abs(distanceDiff) > 10) {
+          if (distanceDiff > 0) {
+            console.log("");
+          } else {
+            console.log("");
+          }
+          initialDistance = currentDistance;
+        }
+        const currentAngle = getAngle(e.touches);
+        let angleDiff = currentAngle - initialAngle;
+        if (angleDiff > 180) angleDiff -= 360;
+        else if (angleDiff < -180) angleDiff += 360;
+        if (Math.abs(angleDiff) > 15) {
+          if (angleDiff > 0) {
+            console.log("");
+          } else {
+            console.log("");
+          }
+          initialAngle = currentAngle;
+        }
+      }
+    });
+
+    document.addEventListener("touchend", (e) => {
+      clearTimeout(longPressTimeout);
+      if (isLongPress) {
+        startX = null;
+        startY = null;
+        return;
+      }
+      if (e.touches.length === 0 && e.changedTouches.length === 1) {
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        const diffX = endX - startX;
+        const diffY = endY - startY;
+        const absDiffX = Math.abs(diffX);
+        const absDiffY = Math.abs(diffY);
+
+        // Vuốt trái / phải / lên / xuống
+        if (absDiffX > 50 || absDiffY > 50) {
+          if (absDiffX > absDiffY) {
+            if (diffX > 0) alert("");
+            else alert("");
+          } else {
+            if (diffY > 0) alert("");
+            else alert("");
+          }
+        } else {
+          console.log("");
+        }
+      }
+      pinchZoom = false;
+      rotateGesture = false;
+      startX = null;
+      startY = null;
+    });
+
+    // Drag đơn giản ghi log (touchmove với 1 ngón)
+    document.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 1) {
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        console.log(`Drag at x=${currentX}, y=${currentY}`);
+      }
+    });
+  </script>
+</body>
+</html>
